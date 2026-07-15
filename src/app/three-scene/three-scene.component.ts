@@ -169,7 +169,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
 
     const numCells = 7;
     const size = 1.42; // Subtle gap for better definition
-    const spacing = 1.5;
+    const spacing = 1.42;
     const values = [10, 25, 40, 5, 8, 99, 12];
 
     const boxGeo = new THREE.BoxGeometry(size, size, size);
@@ -179,6 +179,11 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       // Clone material per cube so each can have an independent color
       const cubeMat = new THREE.LineBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.9, linewidth: 2 });
       const cube = new THREE.LineSegments(edgesGeo, cubeMat);
+      
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x000103, transparent: true, opacity: 0.9 });
+      const fillMesh = new THREE.Mesh(boxGeo, fillMat);
+      cube.add(fillMesh);
+
       const x = (i - (numCells - 1) / 2) * spacing;
       cube.position.set(x, 0, 0);
       this.arrayCubes.push(cube);
@@ -207,7 +212,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
 
     const tex = new THREE.CanvasTexture(canvas);
     tex.anisotropy = 16; // Max sharpness
-    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: false });
     return new THREE.Sprite(mat);
   }
 
@@ -220,7 +225,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     const width = 1.42; // Matches Array cube size
     const height = 1.42; 
     const depth = 1.42; 
-    const spacing = 1.5; 
+    const spacing = 1.42; 
     const values = [25, 40, 5, 8, 99]; // Matches Array values
 
     const boxGeo = new THREE.BoxGeometry(width, height, depth);
@@ -229,6 +234,11 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     for (let i = 0; i < numCells; i++) {
       const cubeMat = new THREE.LineBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.9, linewidth: 2 });
       const cube = new THREE.LineSegments(edgesGeo, cubeMat);
+
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x000103, transparent: true, opacity: 0.9 });
+      const fillMesh = new THREE.Mesh(boxGeo, fillMat);
+      cube.add(fillMesh);
+
       const y = (2 - i) * spacing; // Centered for 5 cells
       cube.position.set(0, y, 0);
       this.stackCubes.push(cube);
@@ -267,6 +277,11 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     for (let i = 0; i < numCells; i++) {
       const nodeMat = new THREE.LineBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.9 });
       const node = new THREE.LineSegments(edgesGeo, nodeMat);
+
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x000103, transparent: true, opacity: 0.9 });
+      const fillMesh = new THREE.Mesh(sphereGeo, fillMat);
+      node.add(fillMesh);
+
       node.position.set(positions[i].x, positions[i].y, 0);
       this.treeNodes.push(node);
       this.treeGroup.add(node);
@@ -309,6 +324,11 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     for (let i = 0; i < numCells; i++) {
       const cubeMat = new THREE.LineBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.9, linewidth: 2 });
       const cube = new THREE.LineSegments(edgesGeo, cubeMat);
+
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x000103, transparent: true, opacity: 0.9 });
+      const fillMesh = new THREE.Mesh(boxGeo, fillMat);
+      cube.add(fillMesh);
+
       const x = (i - (numCells - 1) / 2) * spacing;
       cube.position.set(x, 0, 0);
       this.linkedListCubes.push(cube);
@@ -362,6 +382,11 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     for (let i = 0; i < numCells; i++) {
       const nodeMat = new THREE.LineBasicMaterial({ color: 0x22D3EE, transparent: true, opacity: 0.9, linewidth: 2 });
       const node = new THREE.LineSegments(edgesGeo, nodeMat);
+
+      const fillMat = new THREE.MeshBasicMaterial({ color: 0x000103, transparent: true, opacity: 0.9 });
+      const fillMesh = new THREE.Mesh(icosaGeo, fillMat);
+      node.add(fillMesh);
+
       const x = (i - (numCells - 1) / 2) * spacing;
       node.position.set(x, 0, 0);
       this.queueNodes.push(node);
@@ -411,7 +436,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   }
 
   private resetSolidPositions() {
-    const arraySpacing = 1.5;
+    const arraySpacing = 1.42;
     this.arrayCubes.forEach((cube, i) => {
         const x = (i - 3) * arraySpacing;
         cube.position.set(x, 0, 0);
@@ -423,7 +448,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
         }
     });
 
-    const stackSpacing = 1.5;
+    const stackSpacing = 1.42;
     this.stackCubes.forEach((cube, i) => {
         const y = (2 - i) * stackSpacing;
         cube.position.set(0, y, 0);
@@ -472,8 +497,8 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   }
 
   private morphArrayToStack(lam: number) {
-    const arraySpacing = 1.5;
-    const stackSpacing = 1.5;
+    const arraySpacing = 1.42;
+    const stackSpacing = 1.42;
     const stackWidth = 1.42;
     const stackHeight = 1.42;
     const arraySize = 1.42;
@@ -530,7 +555,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   }
 
   private morphStackToTree(lam: number) {
-    const stackSpacing = 1.5;
+    const stackSpacing = 1.42;
     const treePos = [
       { x: 0, y: 2.8 }, { x: -2.6, y: 0.8 }, { x: 2.6, y: 0.8 },
       { x: -3.9, y: -1.2 }, { x: -1.3, y: -1.2 }, { x: 1.3, y: -1.2 }, { x: 3.9, y: -1.2 }
@@ -1137,8 +1162,8 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     }
 
     // Restore 3D tilt for the 'premium' image look
-    const baseTiltX = 0.15;
-    const baseTiltY = 0.2;
+    const baseTiltX = 0;
+    const baseTiltY = 0;
     
     this.arrayGroup.rotation.x = baseTiltX; 
     this.arrayGroup.rotation.y = baseTiltY; 
@@ -1276,20 +1301,21 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     arrayOpacity = Math.max(0, Math.min(1, arrayOpacity));
     stackOpacity = Math.max(0, Math.min(1, stackOpacity));
     
-    this.arrayGroup.children.forEach((child: any) => {
-      if (child.material) (child.material as any).opacity = arrayOpacity * globalOpacity;
-    });
-    this.stackGroup.children.forEach((child: any) => {
-      if (child.material) (child.material as any).opacity = stackOpacity * globalOpacity;
-    });
-    this.treeGroup.children.forEach((child: any) => {
-      if (child.material) (child.material as any).opacity = treeOpacity * globalOpacity;
-    });
-    this.linkedListGroup.children.forEach((child: any) => {
-      if (child.material) (child.material as any).opacity = llOpacity * globalOpacity;
-    });
-    this.queueGroup.children.forEach((child: any) => {
-      if (child.material) (child.material as any).opacity = qOpacity * globalOpacity;
+    [
+      { group: this.arrayGroup, op: arrayOpacity },
+      { group: this.stackGroup, op: stackOpacity },
+      { group: this.treeGroup, op: treeOpacity },
+      { group: this.linkedListGroup, op: llOpacity },
+      { group: this.queueGroup, op: qOpacity }
+    ].forEach(({ group, op }) => {
+      group.children.forEach((child: any) => {
+        if (child.material) (child.material as any).opacity = op * globalOpacity;
+        if (child.children) {
+          child.children.forEach((sub: any) => {
+            if (sub.material) (sub.material as any).opacity = op * globalOpacity;
+          });
+        }
+      });
     });
 
     // ── PER-CUBE COLOR CODING (Insert = green, Delete = red) ──────────────
@@ -1505,19 +1531,19 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     const my = this.enableMouseParallax ? -this.mouse.y * 0.3 : 0;
 
     this.pts.position.x = this.ptsPosSmooth + mx;
-    this.arrayGroup.position.x = this.ptsPosSmooth + mx;
-    this.stackGroup.position.x = this.ptsPosSmooth + mx;
-    this.treeGroup.position.x = this.ptsPosSmooth + mx;
-    this.linkedListGroup.position.x = this.ptsPosSmooth + mx;
-    this.queueGroup.position.x = this.ptsPosSmooth + mx;
+    this.arrayGroup.position.x = this.ptsPosSmooth;
+    this.stackGroup.position.x = this.ptsPosSmooth;
+    this.treeGroup.position.x = this.ptsPosSmooth;
+    this.linkedListGroup.position.x = this.ptsPosSmooth;
+    this.queueGroup.position.x = this.ptsPosSmooth;
 
     this.posYSmooth = this.lerp(this.posYSmooth, this.posYTarget, 0.08);
     this.pts.position.y = this.posYSmooth + my;
-    this.arrayGroup.position.y = this.posYSmooth + my;
-    this.stackGroup.position.y = this.posYSmooth + my;
-    this.treeGroup.position.y = this.posYSmooth + my;
-    this.linkedListGroup.position.y = this.posYSmooth + my;
-    this.queueGroup.position.y = this.posYSmooth + my;
+    this.arrayGroup.position.y = this.posYSmooth;
+    this.stackGroup.position.y = this.posYSmooth;
+    this.treeGroup.position.y = this.posYSmooth;
+    this.linkedListGroup.position.y = this.posYSmooth;
+    this.queueGroup.position.y = this.posYSmooth;
 
     // 6. Scroll-driven scale
     this.scaleSmooth = this.lerp(this.scaleSmooth, this.scaleTarget, 0.08);
