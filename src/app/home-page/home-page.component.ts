@@ -55,83 +55,31 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
         }
       }));
 
-      // 2. Services horizontal scroll pin
-      const track = document.getElementById('services-track');
-      const right = document.getElementById('services-right');
-      if (track && right) {
-        const cardWrappers = Array.from(document.querySelectorAll('.service-card-wrapper')) as HTMLElement[];
-        const numCards = cardWrappers.length;
-
-        const lastCard = cardWrappers[numCards - 1];
-        const panelRect = right.getBoundingClientRect();
-        const panelCenterX = panelRect.left + panelRect.width / 2;
-        const lastCardRect = lastCard.getBoundingClientRect(); 
-        const lastCardCenterX0 = lastCardRect.left + lastCardRect.width / 2;
-        const endShift = lastCardCenterX0 - panelCenterX;
-        const scrollLength = numCards * 500;
-
-        const highlightCenteredCard = () => {
-          const panelCX = right.getBoundingClientRect().left + right.getBoundingClientRect().width / 2;
-          let closestIdx = 0;
-          let closestDist = Infinity;
-          cardWrappers.forEach((el, i) => {
-            const r = el.getBoundingClientRect();
-            const cardCX = r.left + r.width / 2;
-            const dist = Math.abs(cardCX - panelCX);
-            if (dist < closestDist) {
-              closestDist = dist;
-              closestIdx = i;
-            }
-          });
-          cardWrappers.forEach((el, i) => {
-            if (i === closestIdx) {
-              el.classList.add('scroll-active');
-              el.classList.remove('scroll-dim');
-            } else {
-              el.classList.remove('scroll-active');
-              el.classList.add('scroll-dim');
-            }
-          });
-          return closestIdx;
-        };
-
-        const firstCard = cardWrappers[0];
-        const firstCardRect = firstCard.getBoundingClientRect();
-        const firstCardCenterX0 = firstCardRect.left + firstCardRect.width / 2;
-        const startShift = firstCardCenterX0 - panelCenterX;
-
-        gsap.set(track, { x: -startShift });
-        cardWrappers[0].classList.add('scroll-active');
-        cardWrappers.slice(1).forEach(el => el.classList.add('scroll-dim'));
-
-        const pinningAnim = gsap.fromTo(track,
-          { x: -startShift },
-          {
-          x: -endShift,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.services-section',
-            start: 'top top',
-            end: `+=${scrollLength}`,
-            pin: true,
-            scrub: true,
-            onUpdate: (self) => {
-              if (threeState) {
-                threeState.ptsPosTarget = -5.5;
-                threeState.scrollShapeTarget = 1 + self.progress * (numCards - 1);
-              }
-              highlightCenteredCard();
+      // 2. Services section pinning & 3D shape morphing (Centered)
+      const pinningAnim = gsap.to({}, {
+        scrollTrigger: {
+          trigger: '.services-section',
+          start: 'top top',
+          end: '+=2000',
+          pin: true,
+          scrub: true,
+          onUpdate: (self) => {
+            if (threeState) {
+              threeState.ptsPosTarget = 0.0; // CENTERED in the screen!
+              threeState.scrollShapeTarget = 1 + self.progress * 4.0; // Morph Array (1) -> Stack (2) -> Tree (3) -> Linked List (4) -> Queue (5)
+              threeState.operationType = 'none';
+              threeState.highlightedCellIndex = -1;
             }
           }
-        });
-        if (pinningAnim.scrollTrigger) this.triggers.push(pinningAnim.scrollTrigger);
-      }
+        }
+      });
+      if (pinningAnim.scrollTrigger) this.triggers.push(pinningAnim.scrollTrigger);
 
       // 3. Services entrance
       const entranceAnim = gsap.fromTo('#services-header', 
-        { opacity: 0, x: '-40vw', y: '30vh', scale: 1.4 },
+        { opacity: 0, y: 30, scale: 0.95 },
         { 
-          opacity: 1, x: 0, y: 0, scale: 1, ease: 'power3.out', duration: 1.4,
+          opacity: 1, y: 0, scale: 1, ease: 'power3.out', duration: 1.4,
           scrollTrigger: {
             trigger: '.services-section',
             start: 'top 75%'
