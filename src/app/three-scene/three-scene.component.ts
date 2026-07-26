@@ -91,8 +91,9 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   public activeHighlightColor = new THREE.Color(0xFACC15); 
   public activeCellOpacity = 1.0;
   public activeCellScale = 1.0;
-  public operationType: 'insert' | 'delete' | 'update' | 'search' | 'traversal' | 'none' = 'search';
-  public highlightedCellIndex = 0;
+  public operationType: 'insert' | 'delete' | 'update' | 'search' | 'traversal' | 'none' = 'none';
+  public highlightedCellIndex = -1;
+  public isInteractiveSectionActive = false;
   public interactiveSubProgress = 0;
   public insertedBoxGroup!: THREE.Group;
   public insertedBoxMesh!: THREE.Mesh;
@@ -258,10 +259,15 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       updateLabel.visible = false;
       pointerGroup.add(updateLabel);
 
-      const searchLabel = this.createCapsuleLabelSprite('SEARCH', '#FACC15', '#854D0E');
+      const searchLabel = this.createCapsuleLabelSprite('SEARCHING', '#FACC15', '#854D0E');
       searchLabel.position.set(0, 1.25, 0);
       searchLabel.visible = false;
       pointerGroup.add(searchLabel);
+
+      const foundLabel = this.createCapsuleLabelSprite('FOUND', '#00FF88', '#047857');
+      foundLabel.position.set(0, 1.25, 0);
+      foundLabel.visible = false;
+      pointerGroup.add(foundLabel);
 
       const traversalLabel = this.createCapsuleLabelSprite('TRAVERSAL', '#3B82F6', '#1E3A8A');
       traversalLabel.position.set(0, 1.25, 0);
@@ -281,6 +287,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       (cellGroup as any).deleteLabel = deleteLabel;
       (cellGroup as any).updateLabel = updateLabel;
       (cellGroup as any).searchLabel = searchLabel;
+      (cellGroup as any).foundLabel = foundLabel;
       (cellGroup as any).traversalLabel = traversalLabel;
       (cellGroup as any).valSprite = valSprite;
       (cellGroup as any).material = edgeMat;
@@ -1476,7 +1483,9 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       // Interactive Array (Fully visible)
       arrayOpacity = 1.0;
       stackOpacity = 0;
-      this.resetSolidPositions();
+      if (!this.isInteractiveSectionActive) {
+        this.resetSolidPositions();
+      }
     } else if (this.morphSmooth > 7.2 && this.morphSmooth < 7.8) {
       // Interactive Transition (7 -> 8)
       const transitionLam = (this.morphSmooth - 7.2) / 0.6;
@@ -1550,18 +1559,24 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
     });
 
     // ── PER-CUBE COLOR CODING & DSA OPERATION ANIMATIONS ──────────────
+    const isInteractive = this.morphSmooth > 6.0 || this.isInteractiveSectionActive;
+    const activeOpType = isInteractive ? (this.operationType !== 'none' ? this.operationType : 'search') : 'none';
+    const activeHighlightIdx = isInteractive ? (this.highlightedCellIndex >= 0 ? this.highlightedCellIndex : 0) : -1;
+
     const targetColor = new THREE.Color(
-      this.operationType === 'insert' ? 0x00FF88       // Green
-      : this.operationType === 'delete' ? 0xFF3333      // Red
-      : this.operationType === 'search' ? 0xFACC15      // Yellow
-      : 0x22D3EE                                        // Default Cyan
+      activeOpType === 'insert' ? 0x00FF88       // Green
+      : activeOpType === 'delete' ? 0xFF3333      // Red
+      : activeOpType === 'search' ? 0xFACC15      // Yellow
+      : 0x22D3EE                                  // Default Cyan
     );
     const defaultColor = new THREE.Color(0x22D3EE);
+    const visitedColor = new THREE.Color(0x0284C7); // Light Blue/Cyan tint for visited nodes
+    const foundColor = new THREE.Color(0x00FF88);   // Green for target found!
 
     const subP = this.interactiveSubProgress;
 
     // Handle Insert floating box "22" (Step 3 & 4 of Insert)
-    if (this.operationType === 'insert' && arrayOpacity > 0.5) {
+    if (activeOpType === 'insert' && arrayOpacity > 0.5) {
       this.insertedBoxGroup.visible = true;
       const targetX = -1.1; // Position right after '25' at index 1
       if (subP < 0.5) {
@@ -1589,8 +1604,12 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       const insertLabel = cube.insertLabel as THREE.Sprite;
       const deleteLabel = cube.deleteLabel as THREE.Sprite;
       const searchLabel = cube.searchLabel as THREE.Sprite;
+      const foundLabel = cube.foundLabel as THREE.Sprite;
 
-      const isActive = i === this.highlightedCellIndex && this.operationType !== 'none';
+      const isActive = i === activeHighlightIdx && activeOpType !== 'none';
+      const isVisited = activeOpType === 'search' && i < activeHighlightIdx;
+      const isTargetFound = activeOpType === 'search' && activeHighlightIdx === 7 && i === 7;
+
       const baseX = (i - (8 - 1) / 2) * 1.1; // Base position for 8 elements
 
       let currentX = baseX;
@@ -1598,7 +1617,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       let currentScale = 1.0;
       let currentRotZ = 0;
 
-      if (this.operationType === 'delete') {
+      if (activeOpType === 'delete') {
         // Step 1 of Delete: Delete "5" at index 3
         if (subP < 0.5) {
           const t = subP / 0.5;
@@ -1630,7 +1649,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
             currentX = baseX - 1.1;
           }
         }
-      } else if (this.operationType === 'insert') {
+      } else if (activeOpType === 'insert') {
         // State after deletion of "5" and "12": 6 boxes remaining
         if (i === 3 || i === 6) {
           currentScale = 0.001; // Deleted boxes stay hidden
@@ -1651,24 +1670,37 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       cube.position.set(currentX, currentY, 0);
       cube.rotation.z = currentRotZ;
 
-      const desiredEdge = isActive ? targetColor : defaultColor;
+      // Color coding
+      const desiredEdge = isTargetFound ? foundColor
+        : isActive ? targetColor
+        : isVisited ? visitedColor
+        : defaultColor;
+
       if (wireMat && wireMat.color) wireMat.color.lerp(desiredEdge, 0.2);
 
       if (fillMat) {
-        if (isActive) {
-          if (this.operationType === 'insert') {
+        if (isTargetFound) {
+          fillMat.color.lerp(new THREE.Color(0x047857), 0.25);
+          fillMat.emissive.lerp(new THREE.Color(0x34d399), 0.25);
+          fillMat.emissiveIntensity = 0.95;
+        } else if (isActive) {
+          if (activeOpType === 'insert') {
             fillMat.color.lerp(new THREE.Color(0x047857), 0.2);
             fillMat.emissive.lerp(new THREE.Color(0x34d399), 0.2);
             fillMat.emissiveIntensity = 0.85;
-          } else if (this.operationType === 'delete') {
+          } else if (activeOpType === 'delete') {
             fillMat.color.lerp(new THREE.Color(0x7f1d1d), 0.2);
             fillMat.emissive.lerp(new THREE.Color(0xef4444), 0.2);
             fillMat.emissiveIntensity = 0.85;
-          } else if (this.operationType === 'search') {
+          } else if (activeOpType === 'search') {
             fillMat.color.lerp(new THREE.Color(0x854d0e), 0.2);
             fillMat.emissive.lerp(new THREE.Color(0xfacc15), 0.2);
             fillMat.emissiveIntensity = 0.85;
           }
+        } else if (isVisited) {
+          fillMat.color.lerp(new THREE.Color(0x0284c7), 0.2);
+          fillMat.emissive.lerp(new THREE.Color(0x0284c7), 0.2);
+          fillMat.emissiveIntensity = 0.25;
         } else {
           fillMat.color.lerp(new THREE.Color(0x000000), 0.2);
           fillMat.emissive.lerp(new THREE.Color(0x000000), 0.2);
@@ -1679,23 +1711,32 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
       if (ptrGroup) {
         ptrGroup.visible = isActive;
         if (isActive && ptrMat) {
-          ptrMat.color.lerp(targetColor, 0.25);
-          ptrMat.emissive.lerp(targetColor, 0.25);
+          const ptrColor = isTargetFound ? foundColor : targetColor;
+          ptrMat.color.lerp(ptrColor, 0.25);
+          ptrMat.emissive.lerp(ptrColor, 0.25);
 
-          if (insertLabel) insertLabel.visible = this.operationType === 'insert';
-          if (deleteLabel) deleteLabel.visible = this.operationType === 'delete';
-          if (searchLabel) searchLabel.visible = this.operationType === 'search';
+          if (insertLabel) insertLabel.visible = activeOpType === 'insert';
+          if (deleteLabel) deleteLabel.visible = activeOpType === 'delete';
+          if (searchLabel) searchLabel.visible = activeOpType === 'search' && !isTargetFound;
+          if (foundLabel) foundLabel.visible = isTargetFound;
         }
       }
 
-      if (isActive && currentScale > 0.01) {
-        const pulse = 1.0 + Math.sin(performance.now() * 0.008) * 0.06;
-        const finalS = currentScale * pulse;
-        cube.scale.set(finalS, finalS, finalS);
-        if (wireMat) wireMat.opacity = Math.min(1.0, (arrayOpacity * globalOpacity) + 0.15);
+      if (isTargetFound && currentScale > 0.01) {
+        const pulse = 1.15 + Math.sin(performance.now() * 0.01) * 0.06;
+        const floatY = Math.sin(performance.now() * 0.005) * 0.15;
+        cube.position.y = floatY;
+        cube.scale.set(pulse, pulse, pulse);
+        if (wireMat) wireMat.opacity = Math.min(1.0, (arrayOpacity * globalOpacity) + 0.3);
+      } else if (isActive && currentScale > 0.01) {
+        const pulse = 1.08 + Math.sin(performance.now() * 0.008) * 0.05;
+        const floatY = Math.sin(performance.now() * 0.004) * 0.08;
+        cube.position.y = floatY;
+        cube.scale.set(pulse, pulse, pulse);
+        if (wireMat) wireMat.opacity = Math.min(1.0, (arrayOpacity * globalOpacity) + 0.2);
       } else {
         cube.scale.set(currentScale, currentScale, currentScale);
-        if (wireMat) wireMat.opacity = arrayOpacity * globalOpacity;
+        if (wireMat) wireMat.opacity = isVisited ? arrayOpacity * globalOpacity * 0.7 : arrayOpacity * globalOpacity;
       }
 
       if (this.arrayLabels[i]) {

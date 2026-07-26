@@ -1,4 +1,4 @@
-/* REBUILD_TRIGGER_HASH: 5544332211 */
+/* REBUILD_TRIGGER_HASH: 7788990011 */
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import gsap from 'gsap';
@@ -14,12 +14,12 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
         <div class="header">
           <span class="label">LIVE SIMULATION</span>
           
-          <h2 *ngIf="activeOperation === 'search'">1. Search <span>Operation</span></h2>
+          <h2 *ngIf="activeOperation === 'search'">1. Linear Search <span>Operation</span></h2>
           <h2 *ngIf="activeOperation === 'delete'">2. Delete <span>Operation</span></h2>
           <h2 *ngIf="activeOperation === 'insert'">3. Insert <span>Operation</span></h2>
 
           <p *ngIf="activeOperation === 'search'">
-            <b>Search Phase:</b> Scanning array elements [10, 25, 40, 5, 8, 99, 12, 33] sequentially one by one from index 0 (<b>10</b>) to index 7 (<b>33</b>).
+            <b>Linear Search:</b> Visiting every element [10, 25, 40, 5, 8, 99, 12, 33] sequentially until target <b>33</b> is found at index 7.
           </p>
           <p *ngIf="activeOperation === 'delete'">
             <b>Delete Phase:</b> Deleting target boxes <b>"5"</b> and <b>"12"</b> from array. Remaining elements shift left into <b>6 boxes</b>.
@@ -34,7 +34,7 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
             <div class="dot red"></div>
             <div class="dot yellow"></div>
             <div class="dot green"></div>
-            <span class="filename">array_ops.py</span>
+            <span class="filename">linear_search.cpp</span>
             <span class="op-badge" [ngClass]="activeOperation">
               {{ activeOperation | uppercase }} MODE
             </span>
@@ -42,11 +42,17 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 
           <!-- 1. SEARCH CODE -->
           <div class="code-view" *ngIf="activeOperation === 'search'">
-            <div class="line" [class.active]="activeCodeLine === 1"><span>1</span> <span class="keyword">def</span> <span class="func">linear_search</span>(arr, target):</div>
-            <div class="line" [class.active]="activeCodeLine === 2"><span>2</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Sequential scan: 10 -&gt; 25 -&gt; 40 -&gt; 5 -&gt; 8 -&gt; 99 -&gt; 12 -&gt; 33</span></div>
-            <div class="line" [class.active]="activeCodeLine === 3"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> i <span class="keyword">in</span> <span class="func">range</span>(<span class="func">len</span>(arr)):</div>
-            <div class="line" [class.active]="activeCodeLine === 4"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> arr[i] == target: <span class="comment"># Checking slot #{{ activeTargetIndex }}</span></div>
-            <div class="line" [class.active]="activeCodeLine === 5"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> i <span class="comment"># Complete</span></div>
+            <div class="line" [class.active]="activeCodeLine === 1"><span>1</span> <span class="keyword">int</span> <span class="func">linearSearch</span>(<span class="keyword">int</span> arr[], <span class="keyword">int</span> n, <span class="keyword">int</span> target)</div>
+            <div class="line" [class.active]="activeCodeLine === 2"><span>2</span> &#123;</div>
+            <div class="line" [class.active]="activeCodeLine === 3"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span>(<span class="keyword">int</span> i = 0; i &lt; n; i++)</div>
+            <div class="line" [class.active]="activeCodeLine === 4"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;&#123;</div>
+            <div class="line" [class.active]="activeCodeLine === 5"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span>(arr[i] == target) <span class="comment">// Inspecting slot #{{ activeTargetIndex }}</span></div>
+            <div class="line" [class.active]="activeCodeLine === 6"><span>6</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#123;</div>
+            <div class="line" [class.active]="activeCodeLine === 7"><span>7</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> i; <span class="comment">// Target 33 FOUND!</span></div>
+            <div class="line" [class.active]="activeCodeLine === 8"><span>8</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#125;</div>
+            <div class="line" [class.active]="activeCodeLine === 9"><span>9</span> &nbsp;&nbsp;&nbsp;&nbsp;&#125;</div>
+            <div class="line" [class.active]="activeCodeLine === 10"><span>10</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> -1;</div>
+            <div class="line" [class.active]="activeCodeLine === 11"><span>11</span> &#125;</div>
           </div>
 
           <!-- 2. DELETE CODE -->
@@ -231,33 +237,38 @@ export class InteractiveSectionComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     setTimeout(() => {
       const threeState = (window as any).threeSceneState;
-      
       this.trigger = ScrollTrigger.create({
         trigger: '.interactive-section',
-        start: 'top 20%',
-        end: 'bottom 80%',
+        start: 'top bottom',
+        end: 'bottom top',
         scrub: true,
+        onEnter: () => { if (threeState) threeState.isInteractiveSectionActive = true; },
+        onEnterBack: () => { if (threeState) threeState.isInteractiveSectionActive = true; },
+        onLeave: () => { if (threeState) threeState.isInteractiveSectionActive = false; },
+        onLeaveBack: () => { if (threeState) threeState.isInteractiveSectionActive = false; },
         onUpdate: (self) => {
           if (!threeState) return;
-
+          threeState.isInteractiveSectionActive = true;
           threeState.scrollShapeTarget = 6.8;
           const p = self.progress;
 
           if (p < 0.33) {
-            // ── 1. SEARCH PHASE (Progress 0.00 to 0.33): Scan 10 -> 25 -> 40 -> 5 -> 8 -> 99 -> 12 -> 33 ──
+            // ── 1. LINEAR SEARCH (Progress 0.00 to 0.33): Scan 10 -> 25 -> 40 -> 5 -> 8 -> 99 -> 12 -> 33 ──
             this.activeOperation = 'search';
             const subP = p / 0.33;
             threeState.operationType = 'search';
             threeState.interactiveSubProgress = subP;
 
-            const checkIdx = Math.min(7, Math.floor(subP * 8));
+            const stepVal = subP * 8;
+            const checkIdx = Math.min(7, Math.floor(stepVal));
+            const innerFrac = stepVal - Math.floor(stepVal);
             threeState.highlightedCellIndex = checkIdx;
             this.activeTargetIndex = checkIdx;
 
             if (checkIdx < 7) {
-              this.activeCodeLine = 4; // if arr[i] == target:
+              this.activeCodeLine = innerFrac < 0.4 ? 3 : 5; // for(...) -> if(arr[i] == target)
             } else {
-              this.activeCodeLine = 5; // return i
+              this.activeCodeLine = 7; // return i; (Target 33 Found!)
             }
           } else if (p < 0.66) {
             // ── 2. DELETE PHASE (Progress 0.33 to 0.66) ──
