@@ -1,4 +1,4 @@
-/* REBUILD_TRIGGER_HASH: 123456789 */
+/* REBUILD_TRIGGER_HASH: 5544332211 */
 import { Component, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import gsap from 'gsap';
@@ -13,8 +13,20 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
       <div class="content-container">
         <div class="header">
           <span class="label">LIVE SIMULATION</span>
-          <h2>Interactive Array <span>Operations</span></h2>
-          <p>Watch how data is accessed and manipulated in real-time as you scroll through the memory blocks.</p>
+          
+          <h2 *ngIf="activeOperation === 'search'">1. Search <span>Operation</span></h2>
+          <h2 *ngIf="activeOperation === 'delete'">2. Delete <span>Operation</span></h2>
+          <h2 *ngIf="activeOperation === 'insert'">3. Insert <span>Operation</span></h2>
+
+          <p *ngIf="activeOperation === 'search'">
+            <b>Search Phase:</b> Scanning array elements [10, 25, 40, 5, 8, 99, 12, 33] sequentially one by one from index 0 (<b>10</b>) to index 7 (<b>33</b>).
+          </p>
+          <p *ngIf="activeOperation === 'delete'">
+            <b>Delete Phase:</b> Deleting target boxes <b>"5"</b> and <b>"12"</b> from array. Remaining elements shift left into <b>6 boxes</b>.
+          </p>
+          <p *ngIf="activeOperation === 'insert'">
+            <b>Insert Phase:</b> Inserting new box <b>"22"</b> after "25" (index 2). Array size expands to <b>7 boxes</b>.
+          </p>
         </div>
 
         <div class="operation-card glass">
@@ -23,28 +35,55 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
             <div class="dot yellow"></div>
             <div class="dot green"></div>
             <span class="filename">array_ops.py</span>
+            <span class="op-badge" [ngClass]="activeOperation">
+              {{ activeOperation | uppercase }} MODE
+            </span>
           </div>
-          <div class="code-view">
-            <div class="line" [class.active]="activeStep === 0"><span>1</span> <span class="keyword">def</span> <span class="func">twoSum</span>(nums, target):</div>
-            <div class="line" [class.active]="activeStep >= 1 && activeStep <= 4"><span>2</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> i <span class="keyword">in</span> <span class="func">range</span>(<span class="func">len</span>(nums)):</div>
-            <div class="line" [class.active]="activeStep >= 2 && activeStep <= 4"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> j <span class="keyword">in</span> <span class="func">range</span>(i + 1, <span class="func">len</span>(nums)):</div>
-            <div class="line" [class.active]="activeStep === 5"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> nums[i] + nums[j] == target:</div>
-            <div class="line" [class.active]="activeStep === 6"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> [i, j]</div>
+
+          <!-- 1. SEARCH CODE -->
+          <div class="code-view" *ngIf="activeOperation === 'search'">
+            <div class="line" [class.active]="activeCodeLine === 1"><span>1</span> <span class="keyword">def</span> <span class="func">linear_search</span>(arr, target):</div>
+            <div class="line" [class.active]="activeCodeLine === 2"><span>2</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Sequential scan: 10 -&gt; 25 -&gt; 40 -&gt; 5 -&gt; 8 -&gt; 99 -&gt; 12 -&gt; 33</span></div>
+            <div class="line" [class.active]="activeCodeLine === 3"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> i <span class="keyword">in</span> <span class="func">range</span>(<span class="func">len</span>(arr)):</div>
+            <div class="line" [class.active]="activeCodeLine === 4"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> arr[i] == target: <span class="comment"># Checking slot #{{ activeTargetIndex }}</span></div>
+            <div class="line" [class.active]="activeCodeLine === 5"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> i <span class="comment"># Complete</span></div>
+          </div>
+
+          <!-- 2. DELETE CODE -->
+          <div class="code-view" *ngIf="activeOperation === 'delete'">
+            <div class="line" [class.active]="activeCodeLine === 1"><span>1</span> <span class="keyword">def</span> <span class="func">delete_elements</span>(arr, targets):</div>
+            <div class="line" [class.active]="activeCodeLine === 2"><span>2</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Delete "5" and "12" from array</span></div>
+            <div class="line" [class.active]="activeCodeLine === 3"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;arr.remove(5) <span class="comment"># Remove "5"</span></div>
+            <div class="line" [class.active]="activeCodeLine === 4"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;arr.remove(12) <span class="comment"># Remove "12"</span></div>
+            <div class="line" [class.active]="activeCodeLine === 5"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> arr <span class="comment"># 6 boxes remaining</span></div>
+          </div>
+
+          <!-- 3. INSERT CODE -->
+          <div class="code-view" *ngIf="activeOperation === 'insert'">
+            <div class="line" [class.active]="activeCodeLine === 1"><span>1</span> <span class="keyword">def</span> <span class="func">insert_after</span>(arr, target_val, new_val):</div>
+            <div class="line" [class.active]="activeCodeLine === 2"><span>2</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="comment"># Insert "22" after "25" at index 2</span></div>
+            <div class="line" [class.active]="activeCodeLine === 3"><span>3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">for</span> i <span class="keyword">in</span> <span class="func">range</span>(<span class="func">len</span>(arr)-1, idx, -1):</div>
+            <div class="line" [class.active]="activeCodeLine === 4"><span>4</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arr[i] = arr[i-1] <span class="comment"># Shift right</span></div>
+            <div class="line" [class.active]="activeCodeLine === 5"><span>5</span> &nbsp;&nbsp;&nbsp;&nbsp;arr[2] = 22 <span class="comment"># Insert 22 (7 boxes total)</span></div>
           </div>
         </div>
 
         <div class="stats-grid">
           <div class="stat-box glass">
-            <span class="stat-label">TIME COMPLEXITY</span>
-            <span class="stat-value">O(n)</span>
+            <span class="stat-label">CURRENT OPERATION</span>
+            <span class="stat-value" [ngStyle]="{'color': getOpColor(activeOperation)}">
+              {{ activeOperation | uppercase }}
+            </span>
           </div>
           <div class="stat-box glass">
-            <span class="stat-label">SPACE COMPLEXITY</span>
-            <span class="stat-value">O(1)</span>
+            <span class="stat-label">ARRAY SIZE</span>
+            <span class="stat-value" style="color: #22D3EE;">
+              {{ activeOperation === 'search' ? '8 BOXES' : activeOperation === 'delete' ? '6 BOXES' : '7 BOXES' }}
+            </span>
           </div>
           <div class="stat-box glass">
-            <span class="stat-label">CURRENT INDEX</span>
-            <span class="stat-value">#{{ activeStep - 1 >= 0 ? activeStep - 1 : 'NULL' }}</span>
+            <span class="stat-label">TARGET INDEX</span>
+            <span class="stat-value">#{{ activeTargetIndex >= 0 ? activeTargetIndex : 'NULL' }}</span>
           </div>
         </div>
       </div>
@@ -52,13 +91,13 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
   `,
   styles: [`
     .interactive-section {
-      min-height: 180vh; /* Increased height */
+      min-height: 320vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 150px 5%;
       position: relative;
-      z-index: 20; /* Increased z-index */
+      z-index: 20;
       background: #01040F;
     }
     .content-container {
@@ -93,6 +132,7 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
         font-size: 18px;
         line-height: 1.6;
         max-width: 500px;
+        b { color: #FACC15; }
       }
     }
     .operation-card {
@@ -101,7 +141,7 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
       font-family: 'JetBrains Mono', monospace;
       .status-bar {
         background: rgba(255,255,255,0.05);
-        padding: 10px 15px;
+        padding: 12px 18px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -110,26 +150,42 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
         .red { background: #FF5F56; }
         .yellow { background: #FFBD2E; }
         .green { background: #27C93F; }
-        .filename { color: #64748B; font-size: 12px; margin-left: 10px; }
+        .filename { color: #94A3B8; font-size: 13px; margin-left: 10px; font-weight: 600; }
+        .op-badge {
+          margin-left: auto;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 1px;
+          padding: 4px 10px;
+          border-radius: 4px;
+          &.search { background: rgba(250, 204, 21, 0.15); color: #FACC15; border: 1px solid rgba(250, 204, 21, 0.4); }
+          &.delete { background: rgba(255, 51, 51, 0.15); color: #FF3333; border: 1px solid rgba(255, 51, 51, 0.4); }
+          &.insert { background: rgba(0, 255, 136, 0.15); color: #00FF88; border: 1px solid rgba(0, 255, 136, 0.4); }
+        }
       }
       .code-view {
-        padding: 20px;
-        background: rgba(2, 6, 23, 0.8);
+        padding: 24px;
+        background: rgba(2, 6, 23, 0.85);
         .line {
           color: #94A3B8;
           font-size: 15px;
           margin-bottom: 8px;
-          transition: all 0.3s;
-          span:first-child { color: #475569; margin-right: 20px; user-select: none; }
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 6px;
+          padding: 4px 8px;
+          border-left: 3px solid transparent;
+          span:first-child { color: #475569; margin-right: 16px; user-select: none; }
           &.active {
-            color: #FACC15;
-            transform: translateX(10px);
-            background: rgba(250, 204, 21, 0.05);
+            color: #FFFFFF;
+            transform: translateX(8px);
+            background: rgba(59, 130, 246, 0.22);
+            border-left: 3px solid #3B82F6;
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.35);
           }
         }
-        .keyword { color: #38BDF8; }
-        .func { color: #22D3EE; }
-        .comment { color: #475569; font-style: italic; }
+        .keyword { color: #38BDF8; font-weight: 600; }
+        .func { color: #22D3EE; font-weight: 600; }
+        .comment { color: #64748B; font-style: italic; }
       }
     }
     .stats-grid {
@@ -137,17 +193,18 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 20px;
-      margin-top: 40px;
+      margin-top: 30px;
     }
     .stat-box {
-      padding: 30px;
+      padding: 24px;
       text-align: center;
-      .stat-label { color: #64748B; font-size: 12px; letter-spacing: 1px; display: block; margin-bottom: 10px; }
-      .stat-value { color: #22D3EE; font-size: 32px; font-weight: bold; }
+      border-radius: 12px;
+      .stat-label { color: #64748B; font-size: 12px; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+      .stat-value { font-size: 28px; font-weight: bold; }
     }
     .glass {
       background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       border: 1px solid rgba(56, 189, 248, 0.2);
     }
     @media (max-width: 900px) {
@@ -157,8 +214,19 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
   `]
 })
 export class InteractiveSectionComponent implements AfterViewInit, OnDestroy {
-  activeStep = 0;
+  activeCodeLine = 1;
+  activeOperation: 'search' | 'delete' | 'insert' = 'search';
+  activeTargetIndex = -1;
   private trigger: ScrollTrigger | null = null;
+
+  getOpColor(op: string): string {
+    switch (op) {
+      case 'search': return '#FACC15';
+      case 'delete': return '#FF3333';
+      case 'insert': return '#00FF88';
+      default: return '#22D3EE';
+    }
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -166,19 +234,62 @@ export class InteractiveSectionComponent implements AfterViewInit, OnDestroy {
       
       this.trigger = ScrollTrigger.create({
         trigger: '.interactive-section',
-        start: 'top 30%',
-        end: 'bottom 70%',
+        start: 'top 20%',
+        end: 'bottom 80%',
         scrub: true,
         onUpdate: (self) => {
-          if (threeState) {
-            // Force shape 7 (Interactive Array)
-            threeState.scrollShapeTarget = 7;
-            threeState.ptsPosTarget = 0; // Center it
-            
-            // Map progress to 10 blocks (0-9)
-            const step = Math.floor(self.progress * 11);
-            this.activeStep = step;
-            threeState.interactiveCell = step - 1; // Highlight previous index during the "step"
+          if (!threeState) return;
+
+          threeState.scrollShapeTarget = 6.8;
+          const p = self.progress;
+
+          if (p < 0.33) {
+            // ── 1. SEARCH PHASE (Progress 0.00 to 0.33): Scan 10 -> 25 -> 40 -> 5 -> 8 -> 99 -> 12 -> 33 ──
+            this.activeOperation = 'search';
+            const subP = p / 0.33;
+            threeState.operationType = 'search';
+            threeState.interactiveSubProgress = subP;
+
+            const checkIdx = Math.min(7, Math.floor(subP * 8));
+            threeState.highlightedCellIndex = checkIdx;
+            this.activeTargetIndex = checkIdx;
+
+            if (checkIdx < 7) {
+              this.activeCodeLine = 4; // if arr[i] == target:
+            } else {
+              this.activeCodeLine = 5; // return i
+            }
+          } else if (p < 0.66) {
+            // ── 2. DELETE PHASE (Progress 0.33 to 0.66) ──
+            this.activeOperation = 'delete';
+            const subP = (p - 0.33) / 0.33;
+            threeState.operationType = 'delete';
+            threeState.interactiveSubProgress = subP;
+
+            if (subP < 0.5) {
+              threeState.highlightedCellIndex = 3; // Delete "5" at index 3
+              this.activeTargetIndex = 3;
+              this.activeCodeLine = 3; // arr.remove(5)
+            } else {
+              threeState.highlightedCellIndex = 6; // Delete "12" at index 6
+              this.activeTargetIndex = 6;
+              this.activeCodeLine = 4; // arr.remove(12)
+            }
+          } else {
+            // ── 3. INSERT PHASE (Progress 0.66 to 1.00) ──
+            this.activeOperation = 'insert';
+            const subP = (p - 0.66) / 0.34;
+            threeState.operationType = 'insert';
+            threeState.interactiveSubProgress = subP;
+
+            threeState.highlightedCellIndex = 1; // Insert after "25" (index 1) -> slot 2
+            this.activeTargetIndex = 2;
+
+            if (subP < 0.4) {
+              this.activeCodeLine = 3; // for i in range(...) -> Shift right
+            } else {
+              this.activeCodeLine = 5; // arr[2] = 22 -> Insert 22
+            }
           }
         }
       });

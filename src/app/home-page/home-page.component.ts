@@ -189,57 +189,8 @@ export class HomePageComponent implements AfterViewInit, OnDestroy {
               // ARRAY
               if (p < 0.20) {
                 this.activeDS = 'Array';
-                threeState.scrollShapeTarget = 7;
+                threeState.scrollShapeTarget = 6.8;
                 threeState.blastProgress = 0; 
-                const localP = p / 0.20;
-                const step = Math.floor(localP * 12);
-                this.activeStep = step;
-                if (step <= 5) {
-                  this.activeOp = 'Insertion';
-                  this.opDescription = 'Insertion: Shifting elements to make space...';
-                  this.timeComplexity = 'O(n)'; this.spaceComplexity = 'O(1)';
-                  const opP = localP / 0.50;
-                  const innerStep = Math.floor(opP * 12);
-                  if (innerStep <= 2) {
-                    this.opStatus = 'Target Index #4: Need to shift right...';
-                    threeState.interactiveCells = [-1, -1];
-                    threeState.operationType = 'none';
-                  } else if (innerStep <= 7) {
-                    const shiftIdx = Math.min(6, 7 - (innerStep - 2));
-                    this.opStatus = `Shifting Index ${shiftIdx} → ${shiftIdx + 1}`;
-                    threeState.interactiveCells = [shiftIdx, -1];
-                    threeState.operationType = 'search'; 
-                    threeState.highlightedCellIndex = shiftIdx;
-                  } else {
-                    this.opStatus = 'Inserting new block at Index #4 ✓';
-                    threeState.interactiveCells = [4, -1];
-                    threeState.operationType = 'insert';
-                    threeState.highlightedCellIndex = 4;
-                  }
-                } else {
-                  this.activeOp = 'Deletion';
-                  this.opDescription = 'Deletion: Removing element and shifting back...';
-                  this.timeComplexity = 'O(n)'; this.spaceComplexity = 'O(1)';
-                  const opP = (localP - 0.50) / 0.50;
-                  const innerStep = Math.floor(opP * 12);
-                  if (innerStep <= 2) {
-                    this.opStatus = 'Marking Index #2 for removal...';
-                    threeState.interactiveCells = [2, -1];
-                    threeState.operationType = 'delete';
-                    threeState.highlightedCellIndex = 2;
-                  } else if (innerStep <= 10) {
-                    const shiftIdx = Math.min(6, innerStep - 1);
-                    this.opStatus = `Shifting Index ${shiftIdx} → ${shiftIdx - 1}`;
-                    threeState.interactiveCells = [shiftIdx, -1];
-                    threeState.operationType = 'search';
-                    threeState.highlightedCellIndex = shiftIdx;
-                  } else {
-                    this.opStatus = 'Array compacted ✓';
-                    threeState.interactiveCells = [-1, -1];
-                    threeState.operationType = 'none';
-                    threeState.highlightedCellIndex = -1;
-                  }
-                }
               } 
               // STACK
               else if (p < 0.40) {
