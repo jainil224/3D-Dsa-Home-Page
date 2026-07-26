@@ -32,6 +32,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   // Solid Meshes for Array & Stack
   private arrayGroup!: THREE.Group;
   private stackGroup!: THREE.Group;
+  private masterStackGroup!: THREE.Group;
   private treeGroup!: THREE.Group;
   private arrayCubes: any[] = [];
   private stackCubes: any[] = [];
@@ -182,6 +183,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   private createSolidArray() {
     this.arrayGroup = new THREE.Group();
     this.arrayGroup.visible = false;
+    this.arrayGroup.scale.set(1.3, 1.3, 1.3);
     this.scene.add(this.arrayGroup);
 
     const numCells = 8;
@@ -391,18 +393,22 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   }
 
   private createSolidStack() {
+    this.masterStackGroup = new THREE.Group();
+    this.masterStackGroup.scale.set(1.3, 1.3, 1.3);
+    this.scene.add(this.masterStackGroup);
+
     this.stackGroup = new THREE.Group();
     this.stackGroup.visible = false;
-    this.scene.add(this.stackGroup);
+    this.masterStackGroup.add(this.stackGroup);
 
     this.stackPointerGroup = new THREE.Group();
     this.stackPointerGroup.position.set(0, 1.6 + 2.2, 0); // Default to top of index 0
     this.stackPointerGroup.visible = false;
-    this.scene.add(this.stackPointerGroup);
+    this.masterStackGroup.add(this.stackPointerGroup);
 
     this.insertedStackGroup = new THREE.Group();
     this.insertedStackGroup.visible = false;
-    this.scene.add(this.insertedStackGroup);
+    this.masterStackGroup.add(this.insertedStackGroup);
 
     const numCells = 5;
     const width = 1.1; 
@@ -533,6 +539,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   private createSolidTree() {
     this.treeGroup = new THREE.Group();
     this.treeGroup.visible = false;
+    this.treeGroup.scale.set(1.3, 1.3, 1.3);
     this.scene.add(this.treeGroup);
 
     const numCells = 7;
@@ -588,6 +595,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   private createSolidLinkedList() {
     this.linkedListGroup = new THREE.Group();
     this.linkedListGroup.visible = false;
+    this.linkedListGroup.scale.set(1.3, 1.3, 1.3);
     this.scene.add(this.linkedListGroup);
 
     const numCells = 6;
@@ -646,6 +654,7 @@ export class ThreeSceneComponent implements AfterViewInit, OnDestroy {
   private createSolidQueue() {
     this.queueGroup = new THREE.Group();
     this.queueGroup.visible = false;
+    this.queueGroup.scale.set(1.3, 1.3, 1.3);
     this.scene.add(this.queueGroup);
 
     const numCells = 5;
