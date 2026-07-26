@@ -95,28 +95,83 @@
     .line {
       color: #94A3B8;
       font-size: 13px;
-      margin-bottom: 6px;
-      transition: all 0.3s;
+      margin-bottom: 5px;
+      border-left: 3px solid transparent;
+      border-radius: 4px;
+      padding: 3px 6px 3px 8px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
       span:first-child {
-        color: #475569;
-        margin-right: 16px;
+        color: #334155;
+        margin-right: 14px;
         user-select: none;
+        min-width: 16px;
+        display: inline-block;
       }
 
+      // ── INSERT/PUSH highlight — green glow ──────────────────────────────
+      &.active-insert, &.active-push {
+        color: #4ADE80;
+        background: rgba(0, 255, 136, 0.07);
+        border-left: 3px solid #00FF88;
+        transform: translateX(6px);
+        box-shadow: inset 0 0 14px rgba(0, 255, 136, 0.06),
+                    -2px 0 8px rgba(0, 255, 136, 0.25);
+        .comment { color: #16A34A; }
+      }
+
+      // ── DELETE/POP highlight — red glow ────────────────────────────────
+      &.active-delete, &.active-pop {
+        color: #F87171;
+        background: rgba(255, 51, 51, 0.07);
+        border-left: 3px solid #FF3333;
+        transform: translateX(6px);
+        box-shadow: inset 0 0 14px rgba(255, 51, 51, 0.06),
+                    -2px 0 8px rgba(255, 51, 51, 0.25);
+        .comment { color: #DC2626; }
+      }
+
+      // ── Generic active (other data structures) — blue ─────────────
       &.active {
-        color: #FACC15;
-        transform: translateX(8px);
-        background: rgba(250, 204, 21, 0.05);
-        border-radius: 3px;
-        padding: 1px 4px;
+        color: #38BDF8;
+        background: rgba(56, 189, 248, 0.07);
+        border-left: 3px solid #38BDF8;
+        transform: translateX(6px);
+        box-shadow: inset 0 0 14px rgba(56, 189, 248, 0.06),
+                    -2px 0 8px rgba(56, 189, 248, 0.2);
       }
     }
 
-    .keyword { color: #38BDF8; }
-    .func    { color: #22D3EE; }
-    .comment { color: #475569; font-style: italic; }
+    .keyword { color: #38BDF8; font-weight: 600; }
+    .func    { color: #22D3EE; font-weight: 600; }
+    .comment { color: #475569; font-style: italic; font-size: 12px; }
   }
+
+  // ── Operation badge in the status bar ────────────────────────────────
+  .op-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+
+    &.badge-insert, &.badge-push {
+      background: rgba(0, 255, 136, 0.12);
+      color: #00FF88;
+      border: 1px solid rgba(0, 255, 136, 0.35);
+      box-shadow: 0 0 8px rgba(0, 255, 136, 0.15);
+    }
+
+    &.badge-delete, &.badge-pop {
+      background: rgba(255, 51, 51, 0.12);
+      color: #FF6666;
+      border: 1px solid rgba(255, 51, 51, 0.35);
+      box-shadow: 0 0 8px rgba(255, 51, 51, 0.15);
+    }
+  }
+
 }
 
 .glass {
